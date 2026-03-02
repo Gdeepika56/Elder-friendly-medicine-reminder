@@ -42,14 +42,14 @@ class MedicineViewModel(private val repository: MedicineRepository): ViewModel()
     fun addMedicines(context: Context, medicine:Medicine){
        viewModelScope.launch {
            repository.addMedicine(medicine)
-           ReminderScheduler.schedule(context,medicine)
+           ReminderScheduler.schedule(context, medicine)
        }
     }
 
     fun onMedicineTaken(context:Context,medicine: Medicine){
         viewModelScope.launch {
             repository.markAsTaken(medicine)
-            ReminderScheduler.schedule(context,medicine)
+            ReminderScheduler.cancel(context,medicine.medicineId)
         }
     }
 
@@ -60,6 +60,24 @@ class MedicineViewModel(private val repository: MedicineRepository): ViewModel()
         }
     }
 
+    fun snoozeMedicine(context: Context, medicine: Medicine,snoozeMinutes:Int = 5){
+        viewModelScope.launch {
+            val snoozeMs =snoozeMinutes * 60 * 1000L
+
+            val updated = medicine.copy(
+                medicineTime = System.currentTimeMillis() + snoozeMs
+            )
+
+            repository.updateMedicine(updated)
+
+            ReminderScheduler.snooze(context,medicine,snoozeMs)
+        }
+    }
+
+    fun cancelReminder(context: Context,medicine: Medicine){
+        ReminderScheduler.cancel(context,medicine.medicineId)
+    }
+
     fun getMedicineById(id: Long): Medicine? {
         val state = _uiState.value
         return if (state is States.Success) {
@@ -68,9 +86,10 @@ class MedicineViewModel(private val repository: MedicineRepository): ViewModel()
     }
 
 
-    fun deleteMedicine(medicine: Medicine){
+    fun deleteMedicine(context: Context, medicine: Medicine){
         viewModelScope.launch {
             repository.deleteMedicine(medicine)
+            ReminderScheduler.cancel(context, medicine.medicineId)
         }
     }
 }
