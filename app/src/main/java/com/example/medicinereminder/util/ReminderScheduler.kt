@@ -11,12 +11,16 @@ import java.util.concurrent.TimeUnit
 
 object ReminderScheduler {
 
+    private fun workName(id:Int) ="medicine_$id"
+
     fun schedule(context: Context, medicine: Medicine){
+
         val delay = medicine.medicineTime - System.currentTimeMillis()
 
         if(delay <= 0 )return
 
         val data = workDataOf(
+            "MEDICINE_ID" to medicine.medicineId,
             "MEDICINE_NAME" to medicine.medicineName
         )
 
@@ -28,10 +32,26 @@ object ReminderScheduler {
 
         WorkManager.getInstance(context)
             .enqueueUniqueWork(
-                "medicine_${medicine.medicineId}",
+                workName(medicine.medicineId),
                 ExistingWorkPolicy.REPLACE,
                 request
             )
 
     }
+
+    fun snooze(context: Context, medicine:Medicine, snoozeMs:Long){
+        cancel(context,medicine.medicineId)
+
+        val newMedicine =medicine.copy(
+            medicineTime = System.currentTimeMillis() + snoozeMs
+        )
+
+        schedule(context,newMedicine)
+    }
+
+    fun cancel(context: Context, id:Int){
+        WorkManager.getInstance(context)
+            .cancelUniqueWork(workName(id))
+    }
+
 }
