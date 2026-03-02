@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.medicinereminder.data.local.MedicineEntity
+import com.example.medicinereminder.domain.model.Medicine
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -15,8 +16,11 @@ interface MedicineDao {
     @Query("SELECT * FROM medicines ORDER BY medicineTime ASC")
     fun getAllMedicines(): Flow<List<MedicineEntity>>
 
+    @Query("SELECT * FROM medicines WHERE medicineId = :id")
+    suspend fun getMedicineById(id:Int): MedicineEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertMedicine(medicine: MedicineEntity)
+    suspend fun insertMedicine(medicine: MedicineEntity):Long
 
     @Update
     suspend fun updateMedicine(medicine: MedicineEntity)
