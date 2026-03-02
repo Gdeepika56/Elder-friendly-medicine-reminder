@@ -77,10 +77,16 @@ fun MedicineHomeScreen(viewModel: MedicineViewModel, onAddClick:() -> Unit, onEd
                                viewModel.onMedicineTaken(context, medicines)
                            },
                            onDeleteClick = {
-                               viewModel.deleteMedicine(medicines)
+                               viewModel.deleteMedicine(context, medicines)
                            },
                            onEditClick = {
                                onEditClick(it.medicineId.toLong())
+                           },
+                           onSnoozeClick ={
+                               viewModel.snoozeMedicine(context,medicines)
+                           },
+                           onCancelClick = {
+                               viewModel.cancelReminder(context,medicines)
                            }
                        )
                    }
