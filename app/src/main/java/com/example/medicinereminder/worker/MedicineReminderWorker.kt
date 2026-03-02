@@ -6,10 +6,12 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.room.Database
 import androidx.work.CoroutineWorker
 import androidx.work.Worker
 import com.example.medicinereminder.R
 import androidx.work.WorkerParameters
+import com.example.medicinereminder.data.db.AppDatabase
 import com.example.medicinereminder.util.TextToSpeechHelper
 import com.example.medicinereminder.view.MainActivity
 import kotlinx.coroutines.delay
@@ -19,17 +21,37 @@ class MedicineReminderWorker(context: Context, workerParams:WorkerParameters) : 
     override suspend fun doWork(): Result{
         Log.d("MedicineWorker", "Worked triggered")
 
+        val medicineId = inputData.getInt("MEDICINE_ID", -1)
+        if(medicineId == -1) return Result.failure()
+
         val medicineName =
             inputData.getString("MEDICINE_NAME") ?:return Result.failure()
+
+
+        val db = AppDatabase.getInstance(applicationContext)
+        val dao = db.medicineDao()
+
 
         showNotification(medicineName)
 
         val tts = TextToSpeechHelper(applicationContext)
-        tts.speak("It's time to take your medicine $medicineName")
 
-        delay(2000)
+        val reminderDuration = System.currentTimeMillis() + 2 * 60 * 1000L
+        val intervalMs = 15_000L
+
+
+        while(System.currentTimeMillis() < reminderDuration){
+
+            val medicine = dao.getMedicineById(medicineId)
+
+            if(medicine == null || medicine.medicineIsTaken){
+                break
+            }
+            tts.speak("It's time to take your medicine $medicineName")
+            delay(intervalMs)
+        }
+
         tts.shutdown()
-
         return Result.success()
 
     }
