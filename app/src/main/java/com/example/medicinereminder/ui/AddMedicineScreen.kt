@@ -75,6 +75,9 @@ fun AddMedicineScreen(viewModel:MedicineViewModel, medicineId: Long? = null, onS
                         calendar.set(Calendar.HOUR_OF_DAY, hour)
                         calendar.set(Calendar.MINUTE, minute)
                         calendar.set(Calendar.SECOND,0)
+                        if (calendar.timeInMillis <= System.currentTimeMillis()) {
+                            calendar.add(Calendar.DAY_OF_YEAR, 1)
+                        }
                         selectedTime = calendar.timeInMillis
                     },
                     calendar.get(Calendar.HOUR_OF_DAY),
@@ -100,13 +103,13 @@ fun AddMedicineScreen(viewModel:MedicineViewModel, medicineId: Long? = null, onS
                     medicineName = name,
                     medicineDosage = dosage,
                     medicineTime = selectedTime,
-                    medicineIsTaken = existingMedicine?.medicineIsTaken?:false
+                    medicineIsTaken = false
                 )
 
                 if(existingMedicine == null){
                     viewModel.addMedicines(context,medicine)
                 }else{
-                    viewModel.updateMedicine(context,medicine)
+                    viewModel.updateMedicine(context,medicine.copy(medicineIsTaken = false))
                 }
 
                 onSave()
