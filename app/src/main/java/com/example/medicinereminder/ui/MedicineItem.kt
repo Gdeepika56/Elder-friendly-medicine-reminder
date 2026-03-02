@@ -27,7 +27,13 @@ import com.example.medicinereminder.util.TimeUtils
 
 
 @Composable
-fun MedicineItem(medicine: Medicine, onTakenClick:() -> Unit, onDeleteClick:() ->Unit, onEditClick:(Medicine) -> Unit) {
+fun MedicineItem(medicine: Medicine,
+                 onTakenClick:() -> Unit,
+                 onDeleteClick:() ->Unit,
+                 onEditClick:(Medicine) -> Unit,
+                 onSnoozeClick: () -> Unit,
+                 onCancelClick: () -> Unit
+) {
 
     Card(
         modifier = Modifier
@@ -83,8 +89,28 @@ fun MedicineItem(medicine: Medicine, onTakenClick:() -> Unit, onDeleteClick:() -
 
             IconButton(onClick = onDeleteClick) {
                 Icon(imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete Medicine")
+                    contentDescription = "Delete Medicine"
+                )
             }
+        }
+
+        Row(
+            modifier = Modifier.padding(top = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Text(
+                text = "Snooze",
+                color = Color(0xFF1976D2),
+                modifier = Modifier
+                    .padding(end =24.dp)
+                    .clickable{ onSnoozeClick() }
+            )
+            Text(
+                text = "Stop",
+                color = Color.Red,
+                modifier = Modifier
+                    .clickable{ onCancelClick() }
+            )
         }
     }
 
